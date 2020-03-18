@@ -4,6 +4,7 @@ import PyPDF2
 import dataclasses
 from pathlib import Path
 import subprocess
+import webbrowser
 
 @dataclasses.dataclass
 class S:
@@ -37,7 +38,9 @@ layout = [
             [sg.Button('Open original in Sumatra', key='sumatraorig', size=(25,1))],
             [sg.Button('Open cropped in Sumatra', key='sumatra', size=(25,1))],
             ]),
-    ]
+    ],
+
+    [sg.Text('', size=(49,1)), sg.Text("by Xtotdam", text_color='blue', enable_events=True, key='githublink')]
 ]
 
 window = sg.Window('Crop 2 Print', layout, margins=(0,0), grab_anywhere=True, keep_on_top=True)
@@ -48,6 +51,9 @@ while True:  # Event Loop
     # print(event, values)
     if event is None or event == 'Exit':
         break
+
+    elif event == 'githublink':
+        webbrowser.open('https://github.com/xtotdam/crop2print')
 
     elif event == 'filename':
         pdf_src = Path(values['filename'])
