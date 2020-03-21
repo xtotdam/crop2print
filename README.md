@@ -6,9 +6,7 @@ Simple tool to crop pages of a PDF document. Very useful if you want to print th
 
 ---
 
-<img width=400 src="https://user-images.githubusercontent.com/5108025/76948822-ab29db00-6918-11ea-992d-bc849120b331.png">
-
-<img width=400 src="https://user-images.githubusercontent.com/5108025/76949792-2cce3880-691a-11ea-8dde-2c6e119d2501.png">
+<img width=500 src="https://user-images.githubusercontent.com/5108025/77225292-d877c280-6b7e-11ea-83b8-21a2072d6c4a.png">
 
 Default values are for Physical Review articles — 10 mm on top and bottom, 15 mm on left and right.
 

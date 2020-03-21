@@ -9,9 +9,17 @@ import webbrowser
 @dataclasses.dataclass
 class S:
     ''' settings '''
-    init_margins = dict(t='10', b='10', l='15', r='15') # PhysRev
+    init_margins = dict(t='11', b='8', l='12', r='12') # PhysRev
     theme = 'Reddit'
     sumatra_path = Path(r"C:\Program Files (x86)\SumatraPDF\SumatraPDF.exe")
+
+
+def get_papersize(page):
+    papersize = list(page.mediaBox.upperRight)
+    papersize[0] = float(papersize[0]) / 72 * 25.4
+    papersize[1] = float(papersize[1]) / 72 * 25.4
+    return dict(w=papersize[0], h=papersize[1])
+
 
 sg.theme(S.theme)
 
@@ -21,6 +29,7 @@ layout = [
         sg.FileBrowse(file_types=(("PDF Files", "*.pdf"),("All Files", "*.*")), initial_folder=Path().cwd())
     ],
     [sg.Text('', size=(40,2), key='pdfinfo')],
+    [sg.Text('', size=(40,1), key='aspect_ratio')],
 
     [
         sg.Frame('Crop margins (mm)',
@@ -43,7 +52,7 @@ layout = [
     [sg.Text('', size=(49,1)), sg.Text("by Xtotdam", text_color='blue', enable_events=True, key='githublink')]
 ]
 
-window = sg.Window('Crop 2 Print', layout, margins=(0,0), grab_anywhere=True, keep_on_top=True)
+window = sg.Window('Crop 2 Print', layout, margins=(0,0), keep_on_top=True)
 window.Finalize()
 
 while True:  # Event Loop
@@ -52,8 +61,7 @@ while True:  # Event Loop
     if event is None or event == 'Exit':
         break
 
-    elif event == 'githublink':
-        webbrowser.open('https://github.com/xtotdam/crop2print')
+    elif event == 'githublink': webbrowser.open('https://github.com/xtotdam/crop2print')
 
     elif event == 'filename':
         pdf_src = Path(values['filename'])
@@ -70,16 +78,21 @@ while True:  # Event Loop
                     pages_have_same_size = False
                     break
 
-            papersize = list(pdfReader.getPage(0).mediaBox.upperRight)
-            papersize[0] = float(papersize[0]) / 72 * 25.4
-            papersize[1] = float(papersize[1]) / 72 * 25.4
+            papersize = get_papersize(pdfReader.getPage(0))
+            aspect_ratio = papersize['h'] / papersize['w']
 
-            pdfinfo = f'{pdfReader.numPages} pages. First page is {papersize[0]:.1f} x {papersize[1]:.1f} mm\nPages have same size: {pages_have_same_size}'
+            pdfinfo = '\n'.join([
+                f'{pdfReader.numPages} pages. First page is {papersize["h"]:.1f} x {papersize["w"]:.1f} mm',
+                f'Pages have same size: {pages_have_same_size}',
+            ])
+            aspect_ratio_info = f'Aspect ratio {aspect_ratio:.2f} → '
 
             window['pdfinfo'].update(pdfinfo)
+            window['aspect_ratio'].update(aspect_ratio_info)
         else:
             window['filename'].update(background_color='#ffaaaa')
             window['pdfinfo'].update('')
+            window['aspect_ratio'].update('')
 
     elif event == 'Crop':
         if pdf_src.exists() and len(values['filename']) > 0:
@@ -88,6 +101,8 @@ while True:  # Event Loop
 
             pdfReader = PyPDF2.PdfFileReader(open(pdf_src, 'rb'))
             pdfWriter = PyPDF2.PdfFileWriter()
+
+            ps1 = get_papersize(pdfReader.getPage(0))
 
             for n in range(pdfReader.numPages):
                 pdfWriter.addPage(pdfReader.getPage(n))
@@ -105,6 +120,11 @@ while True:  # Event Loop
 
             with open(pdf_out, 'wb') as out:
                 pdfWriter.write(out)
+
+            ps2 = get_papersize(pdfWriter.getPage(0))
+            ar1, ar2 = ps1['h'] / ps1['w'], ps2['h'] / ps2['w']
+            aspect_ratio_info = f'Aspect ratio {ar1:.2f} → {ar2:.2f}'
+            window['aspect_ratio'].update(aspect_ratio_info)
 
     elif event == 'sumatra':
         pdf_src = Path(values['filename'])
