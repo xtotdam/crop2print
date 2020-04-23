@@ -6,6 +6,8 @@ from pathlib import Path
 import subprocess
 import webbrowser
 
+from version import __version__
+
 @dataclasses.dataclass
 class S:
     ''' settings '''
@@ -49,7 +51,7 @@ layout = [
             ]),
     ],
 
-    [sg.Text('', size=(49,1)), sg.Text("by Xtotdam", text_color='blue', enable_events=True, key='githublink')]
+    [sg.Text('', size=(49,1)), sg.Text(f"{__version__}  by Xtotdam", text_color='blue', enable_events=True, key='githublink')]
 ]
 
 window = sg.Window('Crop 2 Print', layout, margins=(0,0), keep_on_top=True)
@@ -97,7 +99,7 @@ while True:  # Event Loop
     elif event == 'Crop':
         if pdf_src.exists() and len(values['filename']) > 0:
             pdf_src = Path(values['filename'])
-            pdf_out = pdf_src.parent / (pdf_src.stem + '-c2p.pdf')
+            pdf_out = pdf_src.parent / ('c2p-' + pdf_src.name)
 
             pdfReader = PyPDF2.PdfFileReader(open(pdf_src, 'rb'))
             pdfWriter = PyPDF2.PdfFileWriter()
@@ -128,7 +130,7 @@ while True:  # Event Loop
 
     elif event == 'sumatra':
         pdf_src = Path(values['filename'])
-        pdf_out = pdf_src.parent / (pdf_src.stem + '-c2p.pdf')
+        pdf_out = pdf_src.parent / ('c2p-' + pdf_src.name)
         if pdf_out.exists():
             cmd = [S.sumatra_path, pdf_out]
             p = subprocess.Popen(cmd, shell=False, stdin=None, stdout=None, stderr=None, close_fds=True, creationflags=subprocess.DETACHED_PROCESS)
